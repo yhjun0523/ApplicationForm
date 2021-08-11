@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="FormDAO">
+	<insert id="insertForm">
+		<![CDATA[
+			INSERT INTO RCVAPPL(SSN, RCV_D, RCV_SEQ_NO, CUST_NO, APPL_D, BIRTH_D, HG_NM, ENG_NM, STL_MTD, STL_ACT, BNK_CD, STL_DD, APPL_CLAS, STMT_SND_MTD, BILLADR_ADR1, BILLADR_ADR2, BILLADR_ZIP, HDP_NO, BRD, SCRT_NO, EMAIL_ADR, IMPSB_CLAS)
+			VALUES(#{ssn}, SYSDATE, (SELECT NVL(MAX(RCV_SEQ_NO), 0) + 1 FROM RCVAPPL), #{custNo}, #{applD}, #{birthD}, #{hgNm}, #{engNm}, #{stlMtd}, #{stlAct}, #{bnkCd}, #{stlDd}, #{applClas}, #{stmtSndMtd}, #{billadrAdr1}, #{billadrAdr2}, #{billadrZip}, #{hdpNo}, #{brd}, #{scrtNo}, #{emailAdr}, #{impsbClas} )
+		]]>
+	</insert>
+
+	<update id="updateForm">
+		<![CDATA[
+			SELECT * FROM RCVAPPL
+		]]>
+	</update>
+
+	<select id="getForm" resultType="form">
+		<![CDATA[
+			SELECT * FROM RCVAPPL
+			WHERE SSN = #{ssn}
+			
+		]]>
+	</select>
+
+	<select id="getFormList" resultType="form">
+		<![CDATA[
+			SELECT * FROM RCVAPPL
+			WHERE APPL_CLAS = #{applClas}			
+			AND SSN = #{ssn}
+		]]>
+	</select>
+	
+	<select id="getApplClasList" resultType="common">
+		<![CDATA[
+			SELECT * FROM COMM_CODE_DTL
+			WHERE GROUP_CD = 'C007'			
+		]]>
+	</select>
+	
+		<select id="getBrdList" resultType="common">
+		<![CDATA[
+			SELECT * FROM COMM_CODE_DTL
+			WHERE GROUP_CD = 'C004'			
+		]]>
+	</select>
+	
+		<select id="getStlDdList" resultType="common">
+		<![CDATA[
+			SELECT * FROM COMM_CODE_DTL
+			WHERE GROUP_CD = 'C009'			
+		]]>
+	</select>
+	
+		<select id="getStlMtdList" resultType="common">
+		<![CDATA[
+			SELECT * FROM COMM_CODE_DTL
+			WHERE GROUP_CD = 'C002'			
+		]]>
+	</select>
+	
+		<select id="getBnkCdList" resultType="common">
+		<![CDATA[
+			SELECT * FROM COMM_CODE_DTL
+			WHERE GROUP_CD = 'C003'			
+		]]>
+	</select>
+
+
+	<select id="getStmtSndMtdList" resultType="common">
+		<![CDATA[
+			SELECT * FROM COMM_CODE_DTL
+			WHERE GROUP_CD = 'C006'			
+		]]>
+	</select>
+</mapper>
