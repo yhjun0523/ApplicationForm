@@ -3,60 +3,218 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="FormDAO">
-	<insert id="insertForm">
-		<![CDATA[
-			INSERT INTO RCVAPPL(SSN, RCV_D, RCV_SEQ_NO, CUST_NO, APPL_D, BIRTH_D, HG_NM, ENG_NM, STL_MTD, STL_ACT, BNK_CD, STL_DD, APPL_CLAS, STMT_SND_MTD, BILLADR_ADR1, BILLADR_ADR2, BILLADR_ZIP, HDP_NO, BRD, SCRT_NO, EMAIL_ADR, IMPSB_CLAS)
-			VALUES(#{ssn}, SYSDATE, (SELECT NVL(MAX(RCV_SEQ_NO), 0) + 1 FROM RCVAPPL), (SELECT LPAD((CUST_NO + 1), 9, '0') FROM SEQNOTBL), #{applD}, #{birthD}, #{hgNm}, #{engNm}, #{stlMtd}, #{stlAct}, #{bnkCd}, #{stlDd}, #{applClas}, #{stmtSndMtd}, #{billadrAdr1}, #{billadrAdr2}, #{billadrZip}, #{hdpNo}, #{brd}, #{scrtNo}, #{emailAdr}, #{impsbClas})
-		]]>
-	</insert>
-
 	<insert id="insertCustomer">
 		<![CDATA[
 			INSERT INTO CUST(CUST_NO, SSN, REG_D, HG_NM, BIRTH_D, HDP_NO)
-			VALUES((SELECT LPAD((CUST_NO + 1), 9, '0') FROM SEQNOTBL), #{ssn},
-			(SELECT SUBSTR(APPL_D, 3) FROM RCVAPPL WHERE SSN = #{ssn}), #{hgNm}, #{birthD}, #{hdpNo})
+			VALUES((SELECT LPAD((CUST_NO + 1), 9, '0') FROM SEQNOTBL), #{ssn}, (SELECT SUBSTR(APPL_D, 3) FROM RCVAPPL WHERE SSN = #{ssn}),
+					#{hgNm}, #{birthD}, #{hdpNo})
 		]]>
 	</insert>
 
 	<insert id="insertCard">
 		<![CDATA[
 			INSERT INTO CRD(CRD_NO, CUST_NO, SSN, VLD_DUR, BRD, SCRT_NO, ENG_NM, CRD_GRD)
-			VALUES((SELECT LPAD((CRD_NO + 1), 9, '0') FROM SEQNOTBL),
-			(SELECT LPAD((CUST_NO + 1), 9, '0') FROM SEQNOTBL), #{ssn}, (SELECT SUBSTR(APPL_D, 3, 4) + 499 FROM RCVAPPL WHERE SSN = #{ssn}) , #{brd}, #{scrtNo}, #{engNm}, '1')
+			VALUES((SELECT LPAD((CRD_NO + 1), 9, '0') FROM SEQNOTBL), (SELECT LPAD((CUST_NO + 1), 9, '0') FROM SEQNOTBL), #{ssn},
+					(SELECT SUBSTR(APPL_D, 3, 4) + 499 FROM RCVAPPL WHERE SSN = #{ssn}) , #{brd}, #{scrtNo}, #{engNm}, '1')
 		]]>
 	</insert>
 
 	<insert id="insertBill">
 		<![CDATA[
 			INSERT INTO BILL(CUST_NO, STL_ACT, BNK_CD, DPS_NM, STL_MTD, STL_DD, STMT_SND_MTD, BILL_ZIP, BILL_ADR1, BILL_ADR2, EMAIL_ADR)
-			VALUES((SELECT LPAD((CUST_NO + 1), 9, '0') FROM SEQNOTBL), #{stlAct}, #{bnkCd}, #{hgNm}, #{stlMtd}, #{stlDd}, #{stmtSndMtd}, #{billadrZip}, #{billadrAdr1}, #{billadrAdr2}, #{emailAdr})
+			VALUES((SELECT LPAD((CUST_NO + 1), 9, '0') FROM SEQNOTBL), #{stlAct}, #{bnkCd}, #{hgNm}, #{stlMtd}, #{stlDd}, #{stmtSndMtd},
+					#{billadrZip}, #{billadrAdr1}, #{billadrAdr2}, #{emailAdr})
 		]]>
 	</insert>
 
 	<update id="updateCustNo">
 		UPDATE SEQNOTBL
-		SET CUST_NO = LPAD((CUST_NO + 1), 9,
-		'0')
+		SET CUST_NO = LPAD((CUST_NO + 1), 9, '0')
 	</update>
 
 	<update id="updateCrdNo">
 		UPDATE SEQNOTBL
-		SET CRD_NO = LPAD((CRD_NO + 1), 9,
-		'0')
+		SET CRD_NO = LPAD((CRD_NO + 1), 9, '0')
 	</update>
 
+	<!-- 불능코드01(당일 접수내역유무) 체크 -->
+	<select id="selectImpsb01" resultType="form">
+		SELECT * FROM RCVAPPL
+		WHERE RCV_D BETWEEN #{rcvD}
+		AND	#{rcvD}
+		AND SSN = #{ssn}
+		AND APPL_CLAS = #{applClas}
+		AND BRD = #{brd}
+	</select>
 
+	<!-- 불능코드04(최초신규일때) 체크 -->
+	<select id="selectImpsb04_11" resultType="int">
+		SELECT COUNT(*) FROM
+		CRD WHERE SSN = #{ssn}
+		AND BRD = #{brd}
+	</select>
+
+	<!-- 불능코드04(재발급일때) 체크 -->
+	<select id="selectImpsb04_21" resultType="int">
+		SELECT COUNT (*)
+		FROM
+		CRD
+		WHERE SSN = #{ssn}
+		AND BRD = #{brd}
+		AND LST_CRD_F = '1'
+	</select>
+
+	<!-- 회원신청정보 테이블에 입력(불능x) -->
+	<insert id="insertMember">
+		INSERT INTO RCVAPPL (SSN, RCV_D, RCV_SEQ_NO, CUST_NO, APPL_D, APPL_CLAS, BRD, HG_NM, ENG_NM, BIRTH_D, STL_DD, STL_MTD, BNK_CD,
+							STL_ACT, STMT_SND_MTD, BILLADR_ZIP, BILLADR_ADR1, BILLADR_ADR2, EMAIL_ADR, HDP_NO, SCRT_NO)
+		VALUES(#{ssn}, SYSDATE, (LPAD((RSN_SEQ.NEXTVAL),7, '0')), (SELECT LPAD((CUST_NO + 1), 9, '0') FROM SEQNOTBL),
+				#{applD}, #{applClas}, #{brd}, #{hgNm}, #{engNm}, #{birthD}, #{stlDd}, #{stlMtd}, #{bnkCd}, #{stlAct}, #{stmtSndMtd},
+				#{billadrZip}, #{billadrAdr1}, #{billadrAdr2}, #{emailAdr}, #{hdpNo}, #{scrtNo})
+	</insert>
+
+	<!-- 회원신청정보 테이블에 입력(불능o) -->
+	<insert id="insertMember_impsb">
+		INSERT INTO RCVAPPL(SSN, RCV_D, RCV_SEQ_NO, CUST_NO, APPL_D, APPL_CLAS, BRD, HG_NM, ENG_NM, BIRTH_D, STL_DD, STL_MTD, BNK_CD,
+							STL_ACT, STMT_SND_MTD, BILLADR_ZIP, BILLADR_ADR1, BILLADR_ADR2, EMAIL_ADR, HDP_NO, SCRT_NO, IMPSB_CLAS, IMPSB_CD)
+		VALUES(#{ssn}, SYSDATE, (LPAD((RSN_SEQ.NEXTVAL),7, '0')), (SELECT LPAD((CUST_NO + 1), 9, '0') FROM SEQNOTBL),
+				#{applD}, #{applClas}, #{brd}, #{hgNm}, #{engNm}, #{birthD}, #{stlDd}, #{stlMtd}, #{bnkCd}, #{stlAct}, #{stmtSndMtd},
+				#{billadrZip}, #{billadrAdr1},	#{billadrAdr2}, #{emailAdr}, #{hdpNo}, #{scrtNo}, #{impsbClas}, #{impsbCd})
+	</insert>
+
+	<!-- 수정용(현재 미사용) -->
 	<update id="updateForm">
 		<![CDATA[
-			SELECT * FROM RCVAPPL
+			UPDATE BOARD
+			SET APPL_D = #{applD},
+				APPL_CLAS = #{applClas},
+				BRD = #{brd},
+				HG_NM = #{hgNm},
+				ENG_NM = #{engNm},
+				BIRTH_D = #{birthD},
+				STL_DD = #{stlDd},
+				STL_MTD = #{stlMtd},
+				BNK_CD = #{bnkCd},
+				STL_ACT = #{stlAct},
+				STMT_SND_MTD = #{stmtSndMtd},
+				BILLADR_ZIP = #{billadrZip},
+				BILLADR_ADR1 = #{billadrAdr1},
+				BILLADR_ADR2 = #{billadrAdr2},
+				EMAIL_ADR = #{emailAdr},
+				HDP_NO = #{hdpNo},
+				SCRT_NO = #{scrtNo},
+				IMPSB_CLAS,
+				IMPSB_CD)
+			WHERE SSN = #{ssn}
 		]]>
 	</update>
 
+	<!-- 신청 날짜로만 조회 -->
+	<select id="selectAppl_d" resultType="form">
+		<!-- SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, APPL_CLAS, BRD, HDP_NO, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL
+		WHERE RCV_D BETWEEN TO_DATE(#{applD1}, 'YYYY-MM-DD') AND TO_DATE(#{applD2}, 'YYYY-MM-DD') -->
+
+		SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, HDP_NO, b.CODE_NM as APPL_CLAS, c.CODE_NM as BRD, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL a
+		INNER JOIN COMM_CODE_DTL b ON (b.group_cd = 'C007' and a.APPL_CLAS = b.CODE)
+		INNER JOIN COMM_CODE_DTL c ON (c.group_cd = 'C004' and a.BRD = c.CODE)
+		WHERE RCV_D BETWEEN TO_DATE(#{applD1}, 'YYYY-MM-DD') AND TO_DATE(#{applD2}, 'YYYY-MM-DD')
+	</select>
+
+	<!-- 신청 구분으로만 조회 -->
+	<select id="selectAppl_clas" resultType="form">
+		<!-- SELECT RCV_D,
+		RCV_SEQ_NO, SSN, HG_NM, ENG_NM, APPL_CLAS, BRD, HDP_NO, IMPSB_CLAS,	IMPSB_CD
+		FROM RCVAPPL
+		WHERE APPL_CLAS = #{applClas} -->
+		
+		SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, HDP_NO, b.CODE_NM as APPL_CLAS, c.CODE_NM as BRD, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL a
+		INNER JOIN COMM_CODE_DTL b ON (b.group_cd = 'C007' and a.APPL_CLAS = b.CODE)
+		INNER JOIN COMM_CODE_DTL c ON (c.group_cd = 'C004' and a.BRD = c.CODE)
+		WHERE APPL_CLAS = #{applClas}
+	</select>
+
+	<!-- 신청 날짜 + 신청 구분으로 조회 -->
+	<select id="selectAppl_d_Appl_clas" resultType="form">
+		<!-- SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, APPL_CLAS, BRD, HDP_NO, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL
+		WHERE RCV_D BETWEEN TO_DATE(#{applD1}, 'YYYY-MM-DD') AND TO_DATE(#{applD2}, 'YYYY-MM-DD')
+		AND APPL_CLAS =	#{applClas} -->
+		
+		SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, HDP_NO, b.CODE_NM as APPL_CLAS, c.CODE_NM as BRD, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL a
+		INNER JOIN COMM_CODE_DTL b ON (b.group_cd = 'C007' and a.APPL_CLAS = b.CODE)
+		INNER JOIN COMM_CODE_DTL c ON (c.group_cd = 'C004' and a.BRD = c.CODE)
+		WHERE RCV_D BETWEEN TO_DATE(#{applD1}, 'YYYY-MM-DD') AND TO_DATE(#{applD2}, 'YYYY-MM-DD')
+		AND APPL_CLAS = #{applClas}
+	</select>
+
+	<!-- 주민 번호만으로 조회 -->
+	<select id="selectSsn" resultType="form">
+		<!-- SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, APPL_CLAS, BRD, HDP_NO, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL WHERE SSN = #{ssn} -->
+		
+		SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, HDP_NO, b.CODE_NM as APPL_CLAS, c.CODE_NM as BRD, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL a
+		INNER JOIN COMM_CODE_DTL b ON (b.group_cd = 'C007' and a.APPL_CLAS = b.CODE)
+		INNER JOIN COMM_CODE_DTL c ON (c.group_cd = 'C004' and a.BRD = c.CODE)
+		WHERE SSN = #{ssn}
+	</select>
+
+	<!-- 주민번호 + 신청 날짜로 조회 -->
+	<select id="selectAppl_d_ssn" resultType="form">
+		<!-- SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, APPL_CLAS, BRD, HDP_NO, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL
+		WHERE RCV_D BETWEEN TO_DATE(#{applD1}, 'YYYY-MM-DD') AND TO_DATE(#{applD2}, 'YYYY-MM-DD')
+		AND SSN = #{ssn} -->
+		
+		SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, HDP_NO, b.CODE_NM as APPL_CLAS, c.CODE_NM as BRD, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL a
+		INNER JOIN COMM_CODE_DTL b ON (b.group_cd = 'C007' and a.APPL_CLAS = b.CODE)
+		INNER JOIN COMM_CODE_DTL c ON (c.group_cd = 'C004' and a.BRD = c.CODE)
+		WHERE RCV_D BETWEEN TO_DATE(#{applD1}, 'YYYY-MM-DD') AND TO_DATE(#{applD2}, 'YYYY-MM-DD')
+		AND SSN = #{ssn}
+	</select>
+
+	<!-- 주민번호 + 신청 구분으로 조회 -->
+	<select id="selectAppl_clas_ssn" resultType="form">
+		<!-- SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, APPL_CLAS, BRD, HDP_NO, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL
+		WHERE SSN = #{ssn}
+		AND APPL_CLAS = #{applClas} -->
+		
+		SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, HDP_NO, b.CODE_NM as APPL_CLAS, c.CODE_NM as BRD, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL a
+		INNER JOIN COMM_CODE_DTL b ON (b.group_cd = 'C007' and a.APPL_CLAS = b.CODE)
+		INNER JOIN COMM_CODE_DTL c ON (c.group_cd = 'C004' and a.BRD = c.CODE)
+		WHERE SSN = #{ssn}
+		AND APPL_CLAS = #{applClas}
+	</select>
+
+	<!-- 주민번호 + 신청 날짜 + 신청 구분으로 조회 -->
+	<select id="selectAll" resultType="form">
+		<!-- SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, APPL_CLAS, BRD, HDP_NO, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL
+		WHERE RCV_D BETWEEN TO_DATE(#{applD1}, 'YYYY-MM-DD') AND TO_DATE(#{applD2}, 'YYYY-MM-DD')
+		AND SSN = #{ssn}
+		AND	APPL_CLAS =	#{applClas} -->
+		
+		SELECT RCV_D, RCV_SEQ_NO, SSN, HG_NM, ENG_NM, HDP_NO, b.CODE_NM as APPL_CLAS, c.CODE_NM as BRD, IMPSB_CLAS, IMPSB_CD
+		FROM RCVAPPL a
+		INNER JOIN COMM_CODE_DTL b ON (b.group_cd = 'C007' and a.APPL_CLAS = b.CODE)
+		INNER JOIN COMM_CODE_DTL c ON (c.group_cd = 'C004' and a.BRD = c.CODE)
+		WHERE RCV_D BETWEEN TO_DATE(#{applD1}, 'YYYY-MM-DD') AND TO_DATE(#{applD2}, 'YYYY-MM-DD')
+		AND SSN = #{ssn}
+		AND	APPL_CLAS =	#{applClas}
+	</select>
+
+	<!-- 신청서 상세보기 -->
 	<select id="getForm" resultType="form">
 		<![CDATA[
 			SELECT * FROM RCVAPPL
-			WHERE SSN = #{ssn}
-			
+			WHERE RCV_SEQ_NO = '${rcvSeqNo}'			
 		]]>
 	</select>
 
@@ -66,14 +224,15 @@
 			WHERE APPL_CLAS = #{applClas}			
 		]]>
 	</select>
-
+	
+	<!-- 신청구분 리스트 가져오기 -->
 	<select id="getApplClasList" resultType="common">
 		<![CDATA[
 			SELECT * FROM COMM_CODE_DTL
 			WHERE GROUP_CD = 'C007'			
 		]]>
 	</select>
-
+	<!-- 브랜드 리스트 가져오기 -->
 	<select id="getBrdList" resultType="common">
 		<![CDATA[
 			SELECT * FROM COMM_CODE_DTL
@@ -81,13 +240,14 @@
 		]]>
 	</select>
 
+	<!-- 결제일자 리스트 가져오기 -->
 	<select id="getStlDdList" resultType="common">
 		<![CDATA[
 			SELECT * FROM COMM_CODE_DTL
 			WHERE GROUP_CD = 'C009'			
 		]]>
 	</select>
-
+	<!-- 결제방법 리스트 가져오기 -->
 	<select id="getStlMtdList" resultType="common">
 		<![CDATA[
 			SELECT * FROM COMM_CODE_DTL
@@ -95,6 +255,7 @@
 		]]>
 	</select>
 
+	<!-- 결제은행 리스트 가져오기 -->
 	<select id="getBnkCdList" resultType="common">
 		<![CDATA[
 			SELECT * FROM COMM_CODE_DTL
@@ -102,33 +263,12 @@
 		]]>
 	</select>
 
-
+	<!-- 청구서 발송방법 리스트 가져오기 -->
 	<select id="getStmtSndMtdList" resultType="common">
 		<![CDATA[
 			SELECT * FROM COMM_CODE_DTL
 			WHERE GROUP_CD = 'C006'			
 		]]>
 	</select>
-
-	<select id="ssnCheck" resultType="int">
-		<![CDATA[
-			SELECT COUNT(*) FROM RCVAPPL
-			WHERE SSN = #{ssn}
-			AND APPL_D = #{applD}
-			AND APPL_CLAS = #{applClas}
-		]]>
-	</select>
-
-
-	<select id="brdCheck" resultType="int">
-		<![CDATA[
-			SELECT
-			COUNT(*)
-			FROM RCVAPPL
-			WHERE SSN = #{ssn}
-			AND BRD = #{brd}
-		]]>
-	</select>
-
 
 </mapper>

@@ -33,7 +33,29 @@ public interface FormService {
 
 	List<CommonVO> getStmtSndMtdList(CommonVO vo);
 
-	int ssnCheck(FormVO vo) throws Exception;
+	FormVO selectImpsb01(FormVO vo);
 
-	int brdCheck(FormVO vo) throws Exception;
+	int selectImpsb04_11(FormVO vo);
+
+	void insertMember_impsb(FormVO vo);
+
+	void insertMember(FormVO vo);
+
+	int selectImpsb04_21(FormVO vo);
+	
+	List<FormVO> selectAppl_d(FormVO vo);
+	
+	List<FormVO> selectAppl_clas(FormVO vo);
+	
+	List<FormVO> selectAppl_d_Appl_clas(FormVO vo);
+	
+	List<FormVO> selectSsn(FormVO vo);
+	
+	List<FormVO> selectAppl_d_ssn(FormVO vo);
+	
+	List<FormVO> selectAppl_clas_ssn(FormVO vo);
+
+	List<FormVO> selectAll(FormVO vo);
+	
+	
 }

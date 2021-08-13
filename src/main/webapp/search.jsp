@@ -29,10 +29,11 @@
 			<br />
 			<div class="row style1">
 				<div class="col-md-5">
-					기간 <input type="date"> ~ <input type="date">
+					기간 <input type="date" name="applD1"> ~ <input type="date" name="applD2">
 				</div>
 				<div class="col-md-3">
 					신청구분 <select id="applClas" name="applClas">
+							<option value ="">-- 선택 --</option>
 						<c:forEach items="${applClasList }" var="applClas">
 							<option value="${fn:trim(applClas.code) }">${applClas.codeNm }</option>
 						</c:forEach>
@@ -61,10 +62,10 @@
 							<td>불능 구분</td>
 							<td>불능 사유명</td>
 						</tr>
-						<c:forEach items="${formList }" var="form">
+						<c:forEach items="${searchList }" var="form">
 							<tr>
 								<td>${form.rcvD }</td>
-								<td>${form.rcvSeqNo }</td>
+								<td><a href="detail.do?rcvSeqNo=${form.rcvSeqNo}">${form.rcvSeqNo }</a></td>
 								<td>${form.ssn }</td>
 								<td>${form.hgNm }</td>
 								<td>${form.engNm }</td>

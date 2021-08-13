@@ -79,16 +79,54 @@ public class FormServiceImpl implements FormService {
 		return formDAO.getStmtSndMtdList(vo);
 	}
 
-	@Override
-	public int ssnCheck(FormVO vo) throws Exception {
-		int result = formDAO.ssnCheck(vo);
+	public FormVO selectImpsb01(FormVO vo) {
+		return formDAO.selectImpsb01(vo);
+	}
+
+	public int selectImpsb04_11(FormVO vo) {
+		int result = formDAO.selectImpsb04_11(vo);
 		return result;
 	}
 
-	@Override
-	public int brdCheck(FormVO vo) throws Exception {
-		int result = formDAO.brdCheck(vo);
+	public void insertMember_impsb(FormVO vo) {
+		formDAO.insertMember_impsb(vo);
+	}
+
+	public void insertMember(FormVO vo) {
+		formDAO.insertMember(vo);
+	}
+
+	public int selectImpsb04_21(FormVO vo) {
+		int result = formDAO.selectImpsb04_21(vo);
 		return result;
+	}
+
+	public List<FormVO> selectAppl_d(FormVO vo) {
+		return formDAO.selectAppl_d(vo);
+	}
+
+	public List<FormVO> selectAppl_clas(FormVO vo) {
+		return formDAO.selectAppl_clas(vo);
+	}
+
+	public List<FormVO> selectAppl_d_Appl_clas(FormVO vo) {
+		return formDAO.selectAppl_d_Appl_clas(vo);
+	}
+
+	public List<FormVO> selectSsn(FormVO vo) {
+		return formDAO.selectSsn(vo);
+	}
+
+	public List<FormVO> selectAppl_d_ssn(FormVO vo) {
+		return formDAO.selectAppl_d_ssn(vo);
+	}
+
+	public List<FormVO> selectAppl_clas_ssn(FormVO vo) {
+		return formDAO.selectAppl_clas_ssn(vo);
+	}
+
+	public List<FormVO> selectAll(FormVO vo) {
+		return formDAO.selectAll(vo);
 	}
 
 }

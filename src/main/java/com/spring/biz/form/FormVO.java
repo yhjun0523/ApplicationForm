@@ -16,6 +16,12 @@ public class FormVO {
 	// 신청일자
 	private String applD;
 
+	// 신청일자(조회용)
+	private String applD1;
+
+	// 신청일자(조회용)
+	private String applD2;
+
 	// 생년월일
 	private String birthD;
 
@@ -309,16 +315,32 @@ public class FormVO {
 		this.lstOprtEmpno = lstOprtEmpno;
 	}
 
+	public String getApplD1() {
+		return applD1;
+	}
+
+	public void setApplD1(String applD1) {
+		this.applD1 = applD1;
+	}
+
+	public String getApplD2() {
+		return applD2;
+	}
+
+	public void setApplD2(String applD2) {
+		this.applD2 = applD2;
+	}
+
 	@Override
 	public String toString() {
-		return "BoardVO [ssn=" + ssn + ", rcvD=" + rcvD + ", rcvSeqNo=" + rcvSeqNo + ", custNo=" + custNo + ", applD="
-				+ applD + ", birthD=" + birthD + ", hgNm=" + hgNm + ", engNm=" + engNm + ", stlMtd=" + stlMtd
-				+ ", stlAct=" + stlAct + ", bnkCd=" + bnkCd + ", stlDd=" + stlDd + ", mgtBbrn=" + mgtBbrn
-				+ ", applClas=" + applClas + ", stmtSndMtd=" + stmtSndMtd + ", billadrAdr1=" + billadrAdr1
-				+ ", billadrAdr2=" + billadrAdr2 + ", billadrZip=" + billadrZip + ", hdpNo=" + hdpNo + ", brd=" + brd
-				+ ", scrtNo=" + scrtNo + ", emailAdr=" + emailAdr + ", crdNo=" + crdNo + ", impsbClas=" + impsbClas
-				+ ", impsbCd=" + impsbCd + ", lstOprTm=" + lstOprTm + ", lstOprD=" + lstOprD + ", lstOprtEmpno="
-				+ lstOprtEmpno + "]";
+		return "FormVO [ssn=" + ssn + ", rcvD=" + rcvD + ", rcvSeqNo=" + rcvSeqNo + ", custNo=" + custNo + ", applD="
+				+ applD + ", applD1=" + applD1 + ", applD2=" + applD2 + ", birthD=" + birthD + ", hgNm=" + hgNm
+				+ ", engNm=" + engNm + ", stlMtd=" + stlMtd + ", stlAct=" + stlAct + ", bnkCd=" + bnkCd + ", stlDd="
+				+ stlDd + ", mgtBbrn=" + mgtBbrn + ", applClas=" + applClas + ", stmtSndMtd=" + stmtSndMtd
+				+ ", billadrAdr1=" + billadrAdr1 + ", billadrAdr2=" + billadrAdr2 + ", billadrZip=" + billadrZip
+				+ ", hdpNo=" + hdpNo + ", brd=" + brd + ", scrtNo=" + scrtNo + ", emailAdr=" + emailAdr + ", crdNo="
+				+ crdNo + ", impsbClas=" + impsbClas + ", impsbCd=" + impsbCd + ", lstOprTm=" + lstOprTm + ", lstOprD="
+				+ lstOprD + ", lstOprtEmpno=" + lstOprtEmpno + "]";
 	}
 
 }

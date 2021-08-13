@@ -18,60 +18,12 @@
 	rel="stylesheet">
 <link rel="stylesheet"
 	href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="js/script.js"></script>
 <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 <script
 	src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script>
-	function postCode() {
-		new daum.Postcode({
-			oncomplete : function(data) {
-				// 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
-
-				// 각 주소의 노출 규칙에 따라 주소를 조합한다.
-				// 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
-				var addr = ''; // 주소 변수
-				var extraAddr = ''; // 참고항목 변수
-
-				//사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-				if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
-					addr = data.roadAddress;
-				} else { // 사용자가 지번 주소를 선택했을 경우(J)
-					addr = data.jibunAddress;
-				}
-
-				// 사용자가 선택한 주소가 도로명 타입일때 참고항목을 조합한다.
-				if (data.userSelectedType === 'R') {
-					// 법정동명이 있을 경우 추가한다. (법정리는 제외)
-					// 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
-					if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
-						extraAddr += data.bname;
-					}
-					// 건물명이 있고, 공동주택일 경우 추가한다.
-					if (data.buildingName !== '' && data.apartment === 'Y') {
-						extraAddr += (extraAddr !== '' ? ', '
-								+ data.buildingName : data.buildingName);
-					}
-					// 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
-					if (extraAddr !== '') {
-						extraAddr = ' (' + extraAddr + ')';
-					}
-					// 조합된 참고항목을 해당 필드에 넣는다.
-					document.getElementById("billadrAdr2").value = extraAddr;
-
-				} else {
-					document.getElementById("billadrAdr2").value = '';
-				}
-
-				// 우편번호와 주소 정보를 해당 필드에 넣는다.
-				document.getElementById('billadrZip').value = data.zonecode;
-				document.getElementById("billadrAdr1").value = addr;
-				// 커서를 상세주소 필드로 이동한다.
-				/* document.getElementById("sample6_detailAddress").focus(); */
-			}
-		}).open();
-	}
-
 	$(function() {
 		$("#applD").datepicker(
 				{
@@ -136,61 +88,8 @@
 				});
 	});
 
-	function isContinuedValue(value) {
-		console.log("value = " + value);
-		var intCnt1 = 0;
-		var intCnt2 = 0;
-		var temp0 = "";
-		var temp1 = "";
-		var temp2 = "";
-		var temp3 = "";
-
-		for (var i = 0; i < value.length - 3; i++) {
-			temp0 = value.charAt(i);
-			temp1 = value.charAt(i + 1);
-			temp2 = value.charAt(i + 2);
-			temp3 = value.charAt(i + 3);
-
-			console.log(temp0)
-			console.log(temp1)
-			console.log(temp2)
-			console.log(temp3)
-
-			if (temp0.charCodeAt(0) - temp1.charCodeAt(0) == 1
-					&& temp1.charCodeAt(0) - temp2.charCodeAt(0) == 1
-					&& temp2.charCodeAt(0) - temp3.charCodeAt(0) == 1) {
-				intCnt1 = intCnt1 + 1;
-			}
-
-			if (temp0.charCodeAt(0) - temp1.charCodeAt(0) == -1
-					&& temp1.charCodeAt(0) - temp2.charCodeAt(0) == -1
-					&& temp2.charCodeAt(0) - temp3.charCodeAt(0) == -1) {
-				intCnt2 = intCnt2 + 1;
-			}
-		}
-
-		console.log(intCnt1 > 0 || intCnt2 > 0);
-
-		return (intCnt1 > 0 || intCnt2 > 0);
-	}
-
-	function eventKeyup(str) {
-		if (str != '') {
-			if (str.substring(6) == '1' || str.substring(6) == '2') {
-				$("#birthD").val("19" + str.substring(0, 6)); // jQuery 이용
-				//document.all.afterAmt.value = str;    // jsp name 이용
-				//document.getElementById("afterAmt").value = str;   // jsp id 이용
-			}
-
-			if (str.substring(6) == '3' || str.substring(6) == '4') {
-				$("#birthD").val("20" + str.substring(0, 6)); // jQuery 이용
-				//document.all.afterAmt.value = str;    // jsp name 이용
-				//document.getElementById("afterAmt").value = str;   // jsp id 이용
-			}
-		}
-	}
-
 	function vali() {
+
 		var scrtNo = $("#scrtNo").val();
 		if (/(\w)\1\1\1/.test(scrtNo) || isContinuedValue(scrtNo)) {
 			alert("비밀번호에 4자 이상의 연속 또는 반복 문자 및 숫자를 사용하실 수 없습니다.");
@@ -277,49 +176,82 @@
 			return false;
 		}
 
-		$.ajax({
-			url : 'ssnChk.do',
-			type : 'post',
-			dataType : 'json',
-			async : false,
-			data : {
-				'ssn' : $('#ssn').val(),
-				'applD' : $('#applD').val(),
-				'applClas' : $('#applClas').val()
-			},
-			success : function(data) {
-				if (data == 1) {
-					alert("신청하신 내역이 이미 있어 신청이 불가능합니다.");
-					return false;
-					console.log(data)
-				}
-			},
-			error : function(e) {
-				console.log($('#ssn').val())
-			}
-		});
+		//-------------------------주민번호 & 나이 유효성 체크 Start----------------------------------
+		var ssn = $("[name=ssn]").val();
 
-		$.ajax({
-			url : 'brdChk.do',
-			type : 'post',
-			dataType : 'json',
-			async : false,
-			data : {
-				'ssn' : $('#ssn').val(),
-				'brd' : $('#brd').val(),
-			},
-			success : function(data) {
-				if (data == 1) {
-					alert("2개 이상의 동일한 브랜드를 가질 수 없습니다.");
-					return false;
+		var nByear, nTyear;
+		var today;
 
-				}
-			},
-			error : function(e) {
-				console.log(data)
-			}
-		});
+		today = new Date();
+		nTyear = today.getFullYear();
+
+		if (parseInt(ssn.substring(6, 7), 10) < 3) {
+			nByear = 1900 + parseInt(ssn.substring(0, 2), 10);
+		} else {
+			nByear = 2000 + parseInt(ssn.substring(0, 2), 10);
+		}
+		nAge = nTyear - nByear;
+		alert('만' + nAge + '세 입니다. ' + '신청 가능한 나이입니다.');
+
+		if (nAge < 19) {
+			alert('만 19세 이상만 신청이 가능합니다');
+			return false;
+		}
+		//-------------------------주민번호 & 나이 유효성 체크 End------------------------------
+
+		//-------------------------접수일자 & 신청일자 유효성 체크 Start-------------------------
+		var rcv_d = $("[name=rcvD]").val();
+		var appl_d = $("[name=applD]").val();
+
+		if (rcv_d < appl_d) {
+			alert('신청일자가 접수일자보다 뒤에 있을수 없습니다.\n 다시 확인해주세요');
+			return false
+		}
+		//-------------------------접수일자 & 신청일자 유효성 체크 End---------------------------
+
+		alert("신청되었습니다.");
+
 	}
+
+	function isContinuedValue(value) {
+		console.log("value = " + value);
+		var intCnt1 = 0;
+		var intCnt2 = 0;
+		var temp0 = "";
+		var temp1 = "";
+		var temp2 = "";
+		var temp3 = "";
+
+		for (var i = 0; i < value.length - 3; i++) {
+			console.log("=========================");
+			temp0 = value.charAt(i);
+			temp1 = value.charAt(i + 1);
+			temp2 = value.charAt(i + 2);
+			temp3 = value.charAt(i + 3);
+
+			console.log(temp0)
+			console.log(temp1)
+			console.log(temp2)
+			console.log(temp3)
+
+			if (temp0.charCodeAt(0) - temp1.charCodeAt(0) == 1
+					&& temp1.charCodeAt(0) - temp2.charCodeAt(0) == 1
+					&& temp2.charCodeAt(0) - temp3.charCodeAt(0) == 1) {
+				intCnt1 = intCnt1 + 1;
+			}
+
+			if (temp0.charCodeAt(0) - temp1.charCodeAt(0) == -1
+					&& temp1.charCodeAt(0) - temp2.charCodeAt(0) == -1
+					&& temp2.charCodeAt(0) - temp3.charCodeAt(0) == -1) {
+				intCnt2 = intCnt2 + 1;
+			}
+			console.log("=========================");
+		}
+
+		console.log(intCnt1 > 0 || intCnt2 > 0);
+		return (intCnt1 > 0 || intCnt2 > 0);
+	}
+
 </script>
 </head>
 
@@ -338,14 +270,15 @@
 				<div class="col-md-3">
 					주민번호 <input type="text" id="ssn" name="ssn"
 						onkeyup="eventKeyup(this.value)" maxlength="13"
-						oninput="this.value = this.value.replace(/([^0-9])/ig, '').replace(/(\..*)\./g, '$1');" />
+						oninput="this.value = this.value.replace(/([^0-9])/ig, '').replace(/(\..*)\./g, '$1');"
+						value="${formDetail.ssn}">
 				</div>
 				<div class="col-md-3">
-					접수일자 <input type="number" id="rcvD" name="rcvD" readonly="readonly">
+					접수일자 <input type="text" id="rcvD" name="rcvD" readonly="readonly" value="${formDetail.rcvD}">
 				</div>
 				<div class="col-md-3">
-					접수 일련번호 <input type="number" id="rcvSeqNo" name="rcvSeqNo"
-						readonly="readonly" style="background-color: #e2e2e2;">
+					접수 일련번호 <input type="text" id="rcvSeqNo" name="rcvSeqNo"
+						readonly="readonly" style="background-color: #e2e2e2;" value="${fn:trim(formDetail.rcvSeqNo) }">
 				</div>
 				<div class="col-md-2">
 					<input id="detail" type="button" value="조회">
@@ -356,7 +289,7 @@
 			<div class="row style1">
 				<div class="col-md-3">
 					신청일자 <input type="number" id="applD" name="applD"
-						readonly="readonly">
+						readonly="readonly" value="${formDetail.applD }">
 
 				</div>
 				<div class="col-md-3">
@@ -380,15 +313,18 @@
 			<div class="row style1">
 				<div class="col-md-3">
 					성명(한글) <input type="text" id="hgNm" name="hgNm"
-						oninput="this.value = this.value.replace(/([^가-힣ㄱ-ㅎㅏ-ㅣ])/ig, '').replace(/(\..*)\./g, '$1');" />
+						oninput="this.value = this.value.replace(/([^가-힣ㄱ-ㅎㅏ-ㅣ])/ig, '').replace(/(\..*)\./g, '$1');"
+						value="${fn:trim(formDetail.hgNm) }"/>
 				</div>
 				<div class="col-md-3">
 					성명(영문) <input type="text" id="engNm" name="engNm"
-						oninput="this.value = this.value.replace(/[^A-Za-z\s]/ig, '').replace(/(\..*)\./g, '$1');" />
+						oninput="this.value = this.value.replace(/[^A-Za-z\s]/ig, '').replace(/(\..*)\./g, '$1');"
+						value="${fn:trim(formDetail.engNm) }" />
 				</div>
 				<div class="col-md-3">
 					생년월일 <input type="number" id="birthD" name="birthD"
-						readonly="readonly" style="background-color: #e2e2e2;">
+						readonly="readonly" style="background-color: #e2e2e2;"
+						value="${fn:trim(formDetail.birthD) }" >
 				</div>
 				<div class="col-md-3"></div>
 			</div>
@@ -422,7 +358,8 @@
 			<div class="row style1">
 				<div class="col-md-3">
 					결제계좌 <input type="text" id="stlAct" name="stlAct"
-						oninput="this.value = this.value.replace(/([^0-9])/ig, '').replace(/(\..*)\./g, '$1');" />
+						oninput="this.value = this.value.replace(/([^0-9])/ig, '').replace(/(\..*)\./g, '$1');"
+						value="${fn:trim(formDetail.stlAct) }" />
 				</div>
 				<div class="col-md-3"></div>
 				<div class="col-md-3"></div>
@@ -439,24 +376,25 @@
 				</div>
 				<div class="col-md-6">
 					우편번호 <input type="number" id="billadrZip" name="billadrZip"
-						readonly="readonly"> <input type="button"
+						readonly="readonly" value="${fn:trim(formDetail.billadrZip) }" > <input type="button"
 						onclick="postCode()" value="우편번호 찾기"> <input type="text"
-						id="billadrAdr1" name="billadrAdr1" readonly="readonly"> <input
-						type="text" id="billadrAdr2" name="billadrAdr2">
+						id="billadrAdr1" name="billadrAdr1" readonly="readonly" value="${fn:trim(formDetail.billadrAdr1) }"> <input
+						type="text" id="billadrAdr2" name="billadrAdr2" value="${fn:trim(formDetail.billadrAdr2) }">
 				</div>
 				<div class="col-md-3"></div>
 			</div>
 			<br />
 			<div class="row style1">
 				<div class="col-md-3">
-					이메일 <input type="text" id="emailAdr" name="emailAdr">
+					이메일 <input type="text" id="emailAdr" name="emailAdr" value="${fn:trim(formDetail.emailAdr) }">
 				</div>
 				<div class="col-md-3">
 					핸드폰 번호 <input type="text" id="hdpNo" name="hdpNo" maxlength="11"
-						oninput="this.value = this.value.replace(/([^0-9])/ig, '').replace(/(\..*)\./g, '$1');" />
+						oninput="this.value = this.value.replace(/([^0-9])/ig, '').replace(/(\..*)\./g, '$1');"
+						value="${fn:trim(formDetail.hdpNo) }" />
 				</div>
 				<div class="col-md-3">
-					비밀번호 <input type="password" id="scrtNo" name="scrtNo">
+					비밀번호 <input type="password" id="scrtNo" name="scrtNo" value="${fn:trim(formDetail.scrtNo) }">
 				</div>
 				<div class="col-md-3"></div>
 			</div>
@@ -464,11 +402,11 @@
 			<div class="row style1">
 				<div class="col-md-3">
 					불능구분 <input type="text" id="impsbClas" name="impsbClas"
-						readonly="readonly" style="background-color: #e2e2e2;">
+						readonly="readonly" style="background-color: #e2e2e2;" value="${fn:trim(formDetail.impsbClas) }">
 				</div>
 				<div class="col-md-3">
-					불능 사유명 <input type="text" readonly="readonly"
-						style="background-color: #e2e2e2;">
+					불능 사유명 <input type="text" name="impsbCd" readonly="readonly"
+						style="background-color: #e2e2e2;" value="${fn:trim(formDetail.impsbCd) }">
 				</div>
 				<div class="col-md-6"></div>
 			</div>
@@ -477,7 +415,7 @@
 				<div class="col-md-9"></div>
 				<div class="col-md-2">
 					<button id="formSubmit" type="submit">등록</button>
-					<button>수정</button>
+					<button id="formEdit" type="submit">수정</button>
 					<button type="reset">초기화</button>
 				</div>
 				<div class="col-md-1"></div>
